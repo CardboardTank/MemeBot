@@ -20,6 +20,7 @@ import net.dv8tion.jda.core.events.Event;
 import net.dv8tion.jda.core.events.ReadyEvent;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import net.dv8tion.jda.core.hooks.EventListener;
+import net.dv8tion.jda.core.utils.SimpleLog;
 
 public class MemeBot implements EventListener {
 	
@@ -29,6 +30,7 @@ public class MemeBot implements EventListener {
 	private JDA jda;
 	private File[] kitties;
 	private File salt, cuffsGif;
+	private static final SimpleLog LOG = SimpleLog.getLog(MemeBot.class);
 
 	// link: https://discordapp.com/api/oauth2/authorize?client_id=364954414148091905&scope=bot&permissions=0
 	
@@ -93,18 +95,20 @@ public class MemeBot implements EventListener {
 	
 	public void sendCube(Message msg)
 	{
+		LOG.info("Sending a cube for message \"" + msg.getContent() + "\" in channel " + msg.getChannel().getName() + " (id: " + msg.getChannel().getId() + ")");
 		msg.getChannel().sendMessage("```" + Strings.cubeString(msg.getContent()) + "```").queue();
 	}
 	
 	public void sendSalt(Message msg)
 	{
+		LOG.info("Sending some salt for message \"" + msg.getContent() + "\" in channel " + msg.getChannel().getName() + " (id: " + msg.getChannel().getId() + ")");
 		String saltMsg = Strings.constructSaltShipment(msg.getAuthor());
 		msg.getChannel().sendFile(salt, new MessageBuilder().append(saltMsg).build()).queue();
 	}
 	
 	public void sendKitty(Message msg)
 	{
-		
+		LOG.info("Sending a kitty for message \"" + msg.getContent() + "\" in channel " + msg.getChannel().getName() + " (id: " + msg.getChannel().getId() + ")");
 		int index = (int) Math.floor(Math.random() * kitties.length);
 		int pIndex = Strings.sadMsg.indexOf("%");
 		String str = Strings.sadMsg.substring(0, pIndex) + msg.getAuthor().getAsMention() + Strings.sadMsg.substring(pIndex+1);
@@ -114,6 +118,7 @@ public class MemeBot implements EventListener {
 	
 	public void sendCuffs(Message msg)
 	{
+		LOG.info("Sending some cuffs for message \"" + msg.getContent() + "\" in channel " + msg.getChannel().getName() + " (id: " + msg.getChannel().getId() + ")");
 		msg.getChannel().sendFile(cuffsGif, new MessageBuilder().append(msg.getAuthor()).build()).queue();
 	}
 
