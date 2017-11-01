@@ -1,0 +1,11 @@
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Maven
+log/
+target/
+
+# Project
+config.json
