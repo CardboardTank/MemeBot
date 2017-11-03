@@ -10,16 +10,28 @@ import javax.security.auth.login.LoginException;
 
 import org.json.JSONObject;
 
+import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
+import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
+import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
+import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
+import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Game;
+import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.events.Event;
 import net.dv8tion.jda.core.events.ReadyEvent;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import net.dv8tion.jda.core.hooks.EventListener;
+import net.dv8tion.jda.core.managers.AudioManager;
 import net.dv8tion.jda.core.utils.SimpleLog;
 
 public class MemeBot implements EventListener {
@@ -86,6 +98,40 @@ public class MemeBot implements EventListener {
 	private void start()
 	{
 		jda.getPresence().setGame(Game.of("with your credit card"));
+		AudioPlayerManager playerManager = new DefaultAudioPlayerManager();
+		AudioSourceManagers.registerRemoteSources(playerManager);
+		
+		AudioPlayer player = playerManager.createPlayer();
+		TrackScheduler trackScheduler = new TrackScheduler(player);
+		player.addListener(trackScheduler);
+		
+		playerManager.loadItem("", new AudioLoadResultHandler() {
+
+			public void loadFailed(FriendlyException fe) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			public void noMatches() {
+				
+			}
+
+			public void playlistLoaded(AudioPlaylist playlist) {
+				
+			}
+
+			public void trackLoaded(AudioTrack track) {
+				trackScheduler.queue(track);
+			}
+			
+		});
+		
+		Guild guild = jda.getGuildById("364945229792673793");
+		VoiceChannel channel = guild.getVoiceChannelById("364945229792673797");
+		AudioManager manager = guild.getAudioManager();
+		
+		manager.setSendingHandler(new AudioTransmitter(player));
+		manager.openAudioConnection(channel);
 	}
 	
 	public JDA getJDA()

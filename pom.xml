@@ -11,11 +11,21 @@
   		<artifactId>JDA</artifactId>
   		<version>3.3.1_300</version>
 	</dependency>
+	<dependency>
+		<groupId>com.sedmelluq</groupId>
+		<artifactId>lavaplayer</artifactId>
+		<version>1.2.42</version>
+	</dependency>
   </dependencies>
   <repositories>
   	<repository>
   		<id>jcenter</id>
   		<name>jcenter-bintray</name>
+  		<url>http://jcenter.bintray.com</url>
+  	</repository>
+  	<repository>
+  		<id>central</id>
+  		<name>bintray</name>
   		<url>http://jcenter.bintray.com</url>
   	</repository>
   </repositories>

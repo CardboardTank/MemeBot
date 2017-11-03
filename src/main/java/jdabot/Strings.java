@@ -155,6 +155,7 @@ public class Strings {
 				return false;
 			}
 		}
+		
 		return true;
 	}
 
