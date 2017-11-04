@@ -44,6 +44,8 @@ public class Strings {
 			"depressed"
 	};
 	
+	public static final String youtubeUrl = "https://www.youtube.com/watch?v=";
+	
 	public static final String[] selfWords = { "i", "im", "ive", "ill", "me" };
 	
 	public static final String cuffTrigger = "cuffs";
@@ -292,5 +294,10 @@ public class Strings {
 		cube += getBlanks(6) + str.charAt(1) + "\n";
 		cube += str.charAt(1) + getBlanks(3) + str.charAt(0);
 		return cube;
+	}
+	
+	public static String getYoutubeUrl(String id)
+	{
+		return youtubeUrl + id;
 	}
 }
