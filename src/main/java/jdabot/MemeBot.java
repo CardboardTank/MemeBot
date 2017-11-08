@@ -44,12 +44,14 @@ public class MemeBot implements EventListener {
 	public static boolean DEBUG_MODE;
 	public static String DEBUG_CHANNEL;
 	public static String ADMIN_ID;
+	public static String PM_CHANNEL;
 	private static final SimpleLog LOG = SimpleLog.getLog(MemeBot.class);
 	
 	private JDA jda;
 	private File[] kitties;
 	private File salt, cuffsGif;
 	private VoiceChannel currentChannel;
+	private MessageChannel currentMsgChannel;
 	private AudioManager audioManager;
 	private AudioPlayer audioPlayer;
 	private AudioPlayerManager playerManager;
@@ -77,6 +79,7 @@ public class MemeBot implements EventListener {
 		DEBUG_MODE = cfg.getBoolean("debug_mode");
 		DEBUG_CHANNEL = cfg.getString("debug_channel");
 		ADMIN_ID = cfg.getString("admin_id");
+		PM_CHANNEL = cfg.getString("pm_channel");
 		
 		MemeBot bot = new MemeBot();
 		JDA jda = new JDABuilder(AccountType.BOT).setToken(cfg.getString("bot_token")).addEventListener(bot).buildAsync();
@@ -122,34 +125,6 @@ public class MemeBot implements EventListener {
 		audioPlayer.addListener(trackScheduler);
 		
 		audioLoader = new AudioLoader();
-//		
-//		playerManager.loadItem("https://www.youtube.com/watch?v=GGte9INUGpc", new AudioLoadResultHandler() {
-//
-//			public void loadFailed(FriendlyException fe) {
-//				
-//				
-//			}
-//
-//			public void noMatches() {
-//				
-//			}
-//
-//			public void playlistLoaded(AudioPlaylist playlist) {
-//				
-//			}
-//
-//			public void trackLoaded(AudioTrack track) {
-//				trackScheduler.queue(track);
-//			}
-//			
-//		});
-//		
-//		Guild guild = jda.getGuildById("328669681202495488");
-//		VoiceChannel channel = guild.getVoiceChannelById("334861620431814668");
-//		AudioManager manager = guild.getAudioManager();
-//		
-//		manager.setSendingHandler(new AudioTransmitter(player));
-//		manager.openAudioConnection(channel);
 	}
 	
 	public JDA getJDA()
@@ -219,6 +194,20 @@ public class MemeBot implements EventListener {
 		audioManager = currentChannel.getGuild().getAudioManager();
 		audioManager.setSendingHandler(new AudioTransmitter(audioPlayer));
 		LOG.info("Set channel to " + channel.getName() + " (id: " + channel.getId() + ")");
+	}
+	
+	public void setMsgChannel(MessageChannel channel)
+	{
+		currentMsgChannel = channel;
+		LOG.info("Set message channel to " + channel.getName() + " (id: " + channel.getId() + ")");
+	}
+	
+	public boolean sendMessage(String msg)
+	{
+		if (currentMsgChannel == null) return false;
+		
+		currentMsgChannel.sendMessage(msg).queue();
+		return true;
 	}
 	
 	public boolean connectAudio()

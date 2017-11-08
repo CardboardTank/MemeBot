@@ -1,7 +1,11 @@
 package jdabot;
 
+import java.util.Arrays;
+
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.entities.MessageChannel;
+import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
@@ -23,8 +27,15 @@ public class EventListenerImpl extends ListenerAdapter {
 			return;
 		}
 		
-		if (event.getAuthor().getId().equals(bot.getJDA().getSelfUser().getId()))
+		if (event.getAuthor().isBot())
 		{
+			return;
+		}
+		
+		if (event.getChannelType().equals(ChannelType.PRIVATE) && !(event.getAuthor().getId().equals(MemeBot.ADMIN_ID)))
+		{
+			String fwd = event.getAuthor().getName() + " (" + event.getAuthor().getId() + ") sends: " + event.getMessage().getContent();
+			bot.getJDA().getTextChannelById(MemeBot.PM_CHANNEL).sendMessage(fwd).queue();
 			return;
 		}
 		
@@ -64,8 +75,7 @@ public class EventListenerImpl extends ListenerAdapter {
 		
 		if (cmd[0].equals("quit"))
 		{
-			reply(msg, "**Disconnecting...**\n\n*\"" + Strings.getDisconnectFlavorText() + "\"*");
-			bot.getJDA().shutdown();
+			msg.getChannel().sendMessage("**Disconnecting...**\n\n*\"" + Strings.getDisconnectFlavorText() + "\"*").queue((m) -> bot.getJDA().shutdown());
 		}
 		else if (msg.getChannelType().equals(ChannelType.PRIVATE) && msg.getAuthor().getId().equals(MemeBot.ADMIN_ID))
 		{
@@ -75,7 +85,61 @@ public class EventListenerImpl extends ListenerAdapter {
 	
 	private void executeAdminCommand(Message msg, String[] cmd)
 	{
-		if (cmd[0].equals("readchannel"))
+		if (cmd[0].equals("setmsgchannel"))
+		{
+			if (cmd.length < 2)
+			{
+				reply(msg, "Please specify a channel like so: ```!setmsgchannel <channel_id>```");
+			}
+			else
+			{
+				MessageChannel channel = null;
+				try {
+					channel = bot.getJDA().getTextChannelById(cmd[1]);
+					if (channel == null)
+					{
+						reply(msg, "I traveled the world and I found everything except that channel.");
+					}
+					else
+					{
+						bot.setMsgChannel(channel);
+						reply(msg, "Set channel to \"" + channel.getName() +"\" (type: " + channel.getType().toString() + ")");
+					}
+				} catch (NumberFormatException e) {
+					reply(msg, "That's not a channel, sunshine.");
+				}
+			}
+		}
+		else if (cmd[0].equals("setuserchannel"))
+		{
+			if (cmd.length < 2)
+			{
+				reply(msg, "Please specify a user like so: ```!setuserchannel <user_id>```");
+			}
+			else
+			{
+				User user = null;
+				try {
+					user = bot.getJDA().getUserById(cmd[1]);
+					if (user == null)
+					{
+						reply(msg, "That user is undocumented.");
+					}
+					else
+					{
+						final String userName = user.getName();
+						user.openPrivateChannel().queue(ch -> {
+							bot.setMsgChannel(ch);
+							reply(msg, "Set channel to private channel with user " + userName + " (channel id: " + ch.getId() + ")");
+						});
+						
+					}
+				} catch (NumberFormatException e) {
+					reply(msg, "That's not a channel, sunshine.");
+				}
+			}
+		}
+		else if (cmd[0].equals("readchannel"))
 		{
 			VoiceChannel channel = bot.findAdminChannel();
 			if (channel == null)
@@ -199,6 +263,21 @@ public class EventListenerImpl extends ListenerAdapter {
 				} catch (NumberFormatException e) {
 					reply(msg, "What part of 'number' do you not understand?");
 				}
+			}
+		}
+		else if (cmd[0].equals("say"))
+		{
+			if (cmd.length < 2)
+			{
+				reply(msg, "It's okay, I already said nothing.");
+			}
+			else if (bot.sendMessage(String.join(" ", Arrays.copyOfRange(cmd, 1, cmd.length))))
+			{
+				reply(msg, "Message queued.");
+			}
+			else
+			{
+				reply(msg, "Please specify a channel like so: ```!setmsgchannel <channel_id>```");
 			}
 		}
 	}
