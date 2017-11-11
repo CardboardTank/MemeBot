@@ -8,20 +8,37 @@ import net.dv8tion.jda.core.audio.AudioSendHandler;
 public class AudioTransmitter implements AudioSendHandler {
 	
 	private AudioPlayer player;
-	private AudioFrame lastFrame;
+	private AudioReceiver receiver;
+	private byte[] lastFrame;
 	
-	public AudioTransmitter(AudioPlayer player)
+	private boolean relayAudio;
+	
+	public AudioTransmitter(AudioPlayer player, AudioReceiver receiver)
 	{
 		this.player = player;
+		this.receiver = receiver;
 	}
 	
 	public boolean canProvide() {
-		lastFrame = player.provide();
+		if (relayAudio)
+		{
+			lastFrame = receiver.provide();
+		}
+		else
+		{
+			AudioFrame frame = player.provide();
+			lastFrame = (frame == null) ? null : frame.data;
+		}
 		return lastFrame != null;
 	}
 
 	public byte[] provide20MsAudio() {
-		return lastFrame.data;
+		return lastFrame;
+	}
+	
+	public void setRelay(boolean relayAudio)
+	{
+		this.relayAudio = relayAudio;
 	}
 	
 	public boolean isOpus()

@@ -25,6 +25,7 @@ import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.MessageBuilder;
+import net.dv8tion.jda.core.audio.hooks.ConnectionStatus;
 import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
@@ -50,15 +51,18 @@ public class MemeBot implements EventListener {
 	private JDA jda;
 	private File[] kitties;
 	private File salt, cuffsGif;
-	private VoiceChannel currentChannel;
+	private VoiceChannel currentChannel, relayChannel;
 	private MessageChannel currentMsgChannel;
-	private AudioManager audioManager;
+	private AudioManager audioManager, relayManager;
 	private AudioPlayer audioPlayer;
 	private AudioPlayerManager playerManager;
 	private AudioLoader audioLoader;
 	private TrackScheduler trackScheduler;
+	private AudioTransmitter audioTransmitter, relayTransmitter;
+	private AudioReceiver audioReceiver;
 	
 	private boolean voiceConnected;
+	private int relayStatus = 0; // 0 = no relay; 1 = one-way relay; 2 = two-way conduit
 
 	// link: https://discordapp.com/api/oauth2/authorize?client_id=364954414148091905&scope=bot&permissions=0
 	
@@ -123,6 +127,12 @@ public class MemeBot implements EventListener {
 		audioPlayer = playerManager.createPlayer();
 		trackScheduler = new TrackScheduler(audioPlayer);
 		audioPlayer.addListener(trackScheduler);
+		
+		audioReceiver = new AudioReceiver();
+		
+		audioTransmitter = new AudioTransmitter(audioPlayer, null);
+		relayTransmitter = new AudioTransmitter(null, audioReceiver);
+		relayTransmitter.setRelay(true);
 		
 		audioLoader = new AudioLoader();
 	}
@@ -192,8 +202,46 @@ public class MemeBot implements EventListener {
 	{
 		currentChannel = channel;
 		audioManager = currentChannel.getGuild().getAudioManager();
-		audioManager.setSendingHandler(new AudioTransmitter(audioPlayer));
+		audioManager.setSendingHandler(audioTransmitter);
+		audioManager.setReceivingHandler(audioReceiver);
 		LOG.info("Set channel to " + channel.getName() + " (id: " + channel.getId() + ")");
+	}
+	
+	public boolean setRelayChannel(VoiceChannel channel)
+	{
+		if (audioManager == null || !audioManager.getConnectionStatus().equals(ConnectionStatus.CONNECTED)) return false;
+		relayChannel = channel;
+		relayManager = currentChannel.getGuild().getAudioManager();
+		relayManager.setSendingHandler(relayTransmitter);
+		relayManager.openAudioConnection(relayChannel);
+		LOG.info("Set relay channel to " + channel.getName() + "(id: " + channel.getId() + ")");
+		
+		if (relayStatus == 0)
+		{
+			setRelayStatus(1);
+			LOG.info("Relay mode automatically set to one-way.");
+		}
+		return true;
+	}
+	
+	public void setRelayStatus(int status)
+	{
+		switch (status)
+		{
+		case 0:
+			audioTransmitter.setRelay(false);
+			audioReceiver.setActive(false);
+			relayTransmitter.setRelay(false);
+			break;
+		case 1:
+			audioTransmitter.setRelay(false);
+			audioReceiver.setActive(true);
+			relayTransmitter.setRelay(true);
+			break;
+		case 2:
+			throw new UnsupportedOperationException("ergh");
+		}
+		relayStatus = status;
 	}
 	
 	public void setMsgChannel(MessageChannel channel)
