@@ -5,6 +5,7 @@ import java.util.Arrays;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
+import net.dv8tion.jda.core.entities.PrivateChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
@@ -21,6 +22,10 @@ public class EventListenerImpl extends ListenerAdapter {
 	
 	public void onMessageReceived(MessageReceivedEvent event)
 	{
+		if (event.getMessage().getContent().isEmpty())
+		{
+			return;
+		}
 		if (MemeBot.DEBUG_MODE && ((!event.getChannel().getId().equals(MemeBot.DEBUG_CHANNEL)) &&
 				!(event.getAuthor().getId().equals(MemeBot.ADMIN_ID) && event.getChannelType().equals(ChannelType.PRIVATE))))
 		{
@@ -93,20 +98,12 @@ public class EventListenerImpl extends ListenerAdapter {
 			}
 			else
 			{
-				MessageChannel channel = null;
-				try {
-					channel = bot.getJDA().getTextChannelById(cmd[1]);
-					if (channel == null)
-					{
-						reply(msg, "I traveled the world and I found everything except that channel.");
-					}
-					else
-					{
-						bot.setMsgChannel(channel);
-						reply(msg, "Set channel to \"" + channel.getName() +"\" (type: " + channel.getType().toString() + ")");
-					}
-				} catch (NumberFormatException e) {
-					reply(msg, "That's not a channel, sunshine.");
+				MessageChannel channel = messageChannelFromId(msg, cmd[1]);
+				
+				if (channel != null)
+				{
+					bot.setMsgChannel(channel);
+					reply(msg, "Set channel to \"" + channel.getName() +"\" (type: " + channel.getType().toString() + ")");
 				}
 			}
 		}
@@ -118,24 +115,12 @@ public class EventListenerImpl extends ListenerAdapter {
 			}
 			else
 			{
-				User user = null;
-				try {
-					user = bot.getJDA().getUserById(cmd[1]);
-					if (user == null)
-					{
-						reply(msg, "That user is undocumented.");
-					}
-					else
-					{
-						final String userName = user.getName();
-						user.openPrivateChannel().queue(ch -> {
-							bot.setMsgChannel(ch);
-							reply(msg, "Set channel to private channel with user " + userName + " (channel id: " + ch.getId() + ")");
-						});
-						
-					}
-				} catch (NumberFormatException e) {
-					reply(msg, "That's not a channel, sunshine.");
+				PrivateChannel channel = privateChannelFromUserId(msg, cmd[1]);
+				
+				if (channel != null)
+				{
+					bot.setMsgChannel(channel);
+					reply(msg, "Set channel to private channel with user " + channel.getUser().getName() + " (channel id: " + channel.getId() + ")");
 				}
 			}
 		}
@@ -146,10 +131,14 @@ public class EventListenerImpl extends ListenerAdapter {
 			{
 				reply(msg, "I can't find you anywhere!");
 			}
-			else
+			else if (bot.getRelayChannel() == null || !channel.getGuild().getId().equals(bot.getRelayChannel().getGuild().getId()))
 			{
 				bot.setChannel(channel);
 				reply(msg, "Set channel to \"" + channel.getName() +"\" in guild \"" + channel.getGuild().getName() + "\"");
+			}
+			else
+			{
+				reply(msg, "I can't switch to your channel until you turn off that relay.");
 			}
 		}
 		else if (cmd[0].equals("setchannel"))
@@ -160,20 +149,19 @@ public class EventListenerImpl extends ListenerAdapter {
 			}
 			else
 			{
-				VoiceChannel channel = null;
-				try {
-					channel = bot.getJDA().getVoiceChannelById(cmd[1]);
-					if (channel == null)
-					{
-						reply(msg, "I traveled the world and I found everything except that channel.");
-					}
-					else
+				VoiceChannel channel = voiceChannelFromId(msg, cmd[1]);
+				
+				if (channel != null)
+				{
+					if (bot.getRelayChannel() == null || !channel.getGuild().getId().equals(bot.getRelayChannel().getGuild().getId()))
 					{
 						bot.setChannel(channel);
 						reply(msg, "Set channel to \"" + channel.getName() +"\" in guild \"" + channel.getGuild().getName() + "\"");
 					}
-				} catch (NumberFormatException e) {
-					reply(msg, "That's not a channel, sunshine.");
+					else
+					{
+						reply(msg, "I can't switch to that channel until you turn off that relay.");
+					}
 				}
 			}
 		}
@@ -280,12 +268,126 @@ public class EventListenerImpl extends ListenerAdapter {
 				reply(msg, "Please specify a channel like so: ```!setmsgchannel <channel_id>```");
 			}
 		}
+		else if (cmd[0].equals("relay"))
+		{
+			if (cmd.length < 2)
+			{
+				reply(msg, "I need somewhere to relay to.");
+			}
+			else
+			{
+				VoiceChannel channel = voiceChannelFromId(msg, cmd[1]);
+				
+				if (channel != null)
+				{
+					VoiceChannel from = bot.getVoiceChannel();
+					if (!(from != null && from.getGuild().getId().equals(channel.getGuild().getId())))
+					{
+						bot.setRelayChannel(channel);
+					}
+					else
+					{
+						reply(msg, "Relay channel can't be in the same guild.");
+					}
+				}
+			}
+		}
+		else if (cmd[0].equals("relaymode"))
+		{
+			if (cmd.length < 2)
+			{
+				switch (bot.getRelayMode())
+				{
+				case 0:
+					reply(msg, "Relay is currently disabled.");
+					break;
+				case 1:
+					reply(msg, "One-way relay currently enabled.");
+					break;
+				case 2:
+					reply(msg, "Two-way conduit currently enabled.");
+				}
+			}
+			else
+			{
+				try {
+					int status = Integer.parseInt(cmd[1]);
+					if (status != 0 && status != 1 && status != 2)
+					{
+						reply(msg, "Relay mode must be either 0, 1, or 2");
+					}
+					else
+					{
+						bot.setRelayStatus(status);
+					}
+				} catch (NumberFormatException e) {
+					reply(msg, "Relay mode must be a number: ```(0, 1, or 2)```");
+				}
+			}
+		}
+	}
+	
+	private VoiceChannel voiceChannelFromId(Message msg, String channelId)
+	{
+		VoiceChannel channel = null;
+		try {
+			channel = bot.getJDA().getVoiceChannelById(channelId);
+			if (channel == null)
+			{
+				reply(msg, "I traveled the world and I found everything except that channel.");
+			}
+		} catch (NumberFormatException e) {
+			reply(msg, "That's not a channel, sunshine.");
+		}
+		
+		return channel;
+	}
+	
+	private MessageChannel messageChannelFromId(Message msg, String channelId)
+	{
+		MessageChannel channel = null;
+		try {
+			channel = bot.getJDA().getTextChannelById(channelId);
+			if (channel == null)
+			{
+				reply(msg, "I traveled the world and I found everything except that channel.");
+			}
+		} catch (NumberFormatException e) {
+			reply(msg, "That's not a channel, sunshine.");
+		}
+		
+		return channel;
+	}
+	
+	private PrivateChannel privateChannelFromUserId(Message msg, String userId)
+	{
+		User user = null;
+		try {
+			user = bot.getJDA().getUserById(userId);
+			if (user == null)
+			{
+				reply(msg, "That user is undocumented.");
+			}
+			else
+			{
+				return user.openPrivateChannel().complete();
+			}
+		} catch (NumberFormatException e) {
+			reply(msg, "That's not a channel, sunshine.");
+		}
+		
+		return null;
 	}
 	
 	private void audioCommand(Message msg, String cmd)
 	{
 		if (cmd.equals("play"))
 		{
+			if (bot.getRelayMode() == 2)
+			{
+				bot.setRelayStatus(1);
+				reply(msg, "Switching relay mode to one-way.");
+			}
 			reply(msg, "Starting/resuming...");
 			bot.getTrackScheduler().resume();
 		}

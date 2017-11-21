@@ -7,10 +7,9 @@ import net.dv8tion.jda.core.audio.UserAudio;
 public class AudioReceiver implements AudioReceiveHandler {
 	
 	private byte[] lastFrame;
-	private boolean active;
 
 	public boolean canReceiveCombined() {
-		return active;
+		return true;
 	}
 
 	public boolean canReceiveUser() {
@@ -18,6 +17,7 @@ public class AudioReceiver implements AudioReceiveHandler {
 	}
 
 	public void handleCombinedAudio(CombinedAudio combinedAudio) {
+		if (combinedAudio.getUsers().isEmpty()) return;
 		lastFrame = combinedAudio.getAudioData(1.0);
 	}
 
@@ -28,11 +28,6 @@ public class AudioReceiver implements AudioReceiveHandler {
 		byte[] ret = lastFrame;
 		lastFrame = null;
 		return ret;
-	}
-	
-	public void setActive(boolean active)
-	{
-		this.active = active;
 	}
 
 }

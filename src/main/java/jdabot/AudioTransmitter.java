@@ -41,9 +41,14 @@ public class AudioTransmitter implements AudioSendHandler {
 		this.relayAudio = relayAudio;
 	}
 	
+	public void setReceiver(AudioReceiver receiver)
+	{
+		this.receiver = receiver;
+	}
+	
 	public boolean isOpus()
 	{
-		return true;
+		return !relayAudio;
 	}
 
 }

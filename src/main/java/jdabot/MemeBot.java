@@ -59,7 +59,7 @@ public class MemeBot implements EventListener {
 	private AudioLoader audioLoader;
 	private TrackScheduler trackScheduler;
 	private AudioTransmitter audioTransmitter, relayTransmitter;
-	private AudioReceiver audioReceiver;
+	private AudioReceiver audioReceiver, relayReceiver;
 	
 	private boolean voiceConnected;
 	private int relayStatus = 0; // 0 = no relay; 1 = one-way relay; 2 = two-way conduit
@@ -129,10 +129,11 @@ public class MemeBot implements EventListener {
 		audioPlayer.addListener(trackScheduler);
 		
 		audioReceiver = new AudioReceiver();
+		relayReceiver = new AudioReceiver();
 		
-		audioTransmitter = new AudioTransmitter(audioPlayer, null);
+		audioTransmitter = new AudioTransmitter(audioPlayer, relayReceiver);
 		relayTransmitter = new AudioTransmitter(null, audioReceiver);
-		relayTransmitter.setRelay(true);
+		//relayTransmitter.setRelay(true);
 		
 		audioLoader = new AudioLoader();
 	}
@@ -203,7 +204,6 @@ public class MemeBot implements EventListener {
 		currentChannel = channel;
 		audioManager = currentChannel.getGuild().getAudioManager();
 		audioManager.setSendingHandler(audioTransmitter);
-		audioManager.setReceivingHandler(audioReceiver);
 		LOG.info("Set channel to " + channel.getName() + " (id: " + channel.getId() + ")");
 	}
 	
@@ -211,7 +211,7 @@ public class MemeBot implements EventListener {
 	{
 		if (audioManager == null || !audioManager.getConnectionStatus().equals(ConnectionStatus.CONNECTED)) return false;
 		relayChannel = channel;
-		relayManager = currentChannel.getGuild().getAudioManager();
+		relayManager = relayChannel.getGuild().getAudioManager();
 		relayManager.setSendingHandler(relayTransmitter);
 		relayManager.openAudioConnection(relayChannel);
 		LOG.info("Set relay channel to " + channel.getName() + "(id: " + channel.getId() + ")");
@@ -221,6 +221,7 @@ public class MemeBot implements EventListener {
 			setRelayStatus(1);
 			LOG.info("Relay mode automatically set to one-way.");
 		}
+
 		return true;
 	}
 	
@@ -230,16 +231,28 @@ public class MemeBot implements EventListener {
 		{
 		case 0:
 			audioTransmitter.setRelay(false);
-			audioReceiver.setActive(false);
+			relayManager.setReceivingHandler(null);
 			relayTransmitter.setRelay(false);
+			audioManager.setReceivingHandler(null);
+			relayManager.closeAudioConnection();
+			relayChannel = null;
 			break;
 		case 1:
 			audioTransmitter.setRelay(false);
-			audioReceiver.setActive(true);
+			relayManager.setReceivingHandler(null);
 			relayTransmitter.setRelay(true);
+			audioManager.setReceivingHandler(audioReceiver);
 			break;
 		case 2:
-			throw new UnsupportedOperationException("ergh");
+			audioTransmitter.setRelay(true);
+			relayManager.setReceivingHandler(relayReceiver);
+			relayTransmitter.setRelay(true);
+			audioManager.setReceivingHandler(audioReceiver);
+			
+			if (!audioPlayer.isPaused() || !trackScheduler.isTrackSet())
+			{
+				trackScheduler.pause();
+			}
 		}
 		relayStatus = status;
 	}
@@ -248,6 +261,21 @@ public class MemeBot implements EventListener {
 	{
 		currentMsgChannel = channel;
 		LOG.info("Set message channel to " + channel.getName() + " (id: " + channel.getId() + ")");
+	}
+	
+	public VoiceChannel getVoiceChannel()
+	{
+		return currentChannel;
+	}
+	
+	public VoiceChannel getRelayChannel()
+	{
+		return relayChannel;
+	}
+	
+	public int getRelayMode()
+	{
+		return relayStatus;
 	}
 	
 	public boolean sendMessage(String msg)
@@ -281,8 +309,7 @@ public class MemeBot implements EventListener {
 			}
 		}
 		
-		disconnectAudio();
-		connectAudio();
+		audioManager.openAudioConnection(currentChannel);
 		return true;
 	}
 	
