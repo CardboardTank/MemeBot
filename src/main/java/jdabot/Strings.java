@@ -41,7 +41,8 @@ public class Strings {
 			"sadness",
 			"sad",
 			"depression",
-			"depressed"
+			"depressed",
+			"sorrow"
 	};
 	
 	public static final String youtubeUrl = "https://www.youtube.com/watch?v=";
