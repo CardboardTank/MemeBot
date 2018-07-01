@@ -18,9 +18,12 @@ public class EventListenerImpl extends ListenerAdapter {
 	
 	private MemeBot bot;
 	
+	private boolean adminsEnabled;
+	
 	public EventListenerImpl(MemeBot bot)
 	{
 		this.bot = bot;
+		adminsEnabled = true;
 	}
 	
 	public void onMessageReceived(MessageReceivedEvent event)
@@ -74,6 +77,11 @@ public class EventListenerImpl extends ListenerAdapter {
 	}
 	
 	private boolean isIdAdmin(String id) {
+		
+		if (!adminsEnabled)
+		{
+			return MemeBot.OWNER_ID.equals(id);
+		}
 		for (int i = 0; i < MemeBot.ADMIN_IDS.length; i++) {
 			if (MemeBot.ADMIN_IDS[i].equals(id)) {
 				return true;
@@ -179,6 +187,12 @@ public class EventListenerImpl extends ListenerAdapter {
 		else if (cmd[0].equals("unscramble"))
 		{
 			unscrambleGuild(msg, cmd);
+		}
+		else if (cmd[0].equals("toggleadmins"))
+		{
+			adminsEnabled = !adminsEnabled;
+			String out = "Admins are now " + ((adminsEnabled) ? "enabled" : "disabled") + ".";
+			reply(msg, out);
 		}
 	}
 	
@@ -298,7 +312,7 @@ public class EventListenerImpl extends ListenerAdapter {
 				return user.openPrivateChannel().complete();
 			}
 		} catch (NumberFormatException e) {
-			reply(msg, "That's not a channel, sunshine.");
+			reply(msg, "That's not a user, sunshine.");
 		}
 		
 		return null;
