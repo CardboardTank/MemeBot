@@ -92,238 +92,55 @@ public class EventListenerImpl extends ListenerAdapter {
 	{
 		if (cmd[0].equals("setmsgchannel"))
 		{
-			if (cmd.length < 2)
-			{
-				reply(msg, "Please specify a channel like so: ```!setmsgchannel <channel_id>```");
-			}
-			else
-			{
-				MessageChannel channel = messageChannelFromId(msg, cmd[1]);
-				
-				if (channel != null)
-				{
-					bot.setMsgChannel(channel);
-					reply(msg, "Set channel to \"" + channel.getName() +"\" (type: " + channel.getType().toString() + ")");
-				}
-			}
+			setTextChannel(msg, cmd);
 		}
 		else if (cmd[0].equals("setuserchannel"))
 		{
-			if (cmd.length < 2)
-			{
-				reply(msg, "Please specify a user like so: ```!setuserchannel <user_id>```");
-			}
-			else
-			{
-				PrivateChannel channel = privateChannelFromUserId(msg, cmd[1]);
-				
-				if (channel != null)
-				{
-					bot.setMsgChannel(channel);
-					reply(msg, "Set channel to private channel with user " + channel.getUser().getName() + " (channel id: " + channel.getId() + ")");
-				}
-			}
+			setPrivateChannel(msg, cmd);
 		}
-		else if (cmd[0].equals("readchannel"))
+		else if (cmd[0].equals("findchannel"))
 		{
-			VoiceChannel channel = bot.findAdminChannel();
-			if (channel == null)
-			{
-				reply(msg, "I can't find you anywhere!");
-			}
-			else if (bot.getRelayChannel() == null || !channel.getGuild().getId().equals(bot.getRelayChannel().getGuild().getId()))
-			{
-				bot.setChannel(channel);
-				reply(msg, "Set channel to \"" + channel.getName() +"\" in guild \"" + channel.getGuild().getName() + "\"");
-			}
-			else
-			{
-				reply(msg, "I can't switch to your channel until you turn off that relay.");
-			}
+			readVoiceChannel(msg, cmd);
 		}
-		else if (cmd[0].equals("setchannel"))
+		else if (cmd[0].equals("setvoicechannel"))
 		{
-			if (cmd.length < 2)
-			{
-				reply(msg, "Please specify a channel like so: ```!setchannel <channel_id>```");
-			}
-			else
-			{
-				VoiceChannel channel = voiceChannelFromId(msg, cmd[1]);
-				
-				if (channel != null)
-				{
-					if (bot.getRelayChannel() == null || !channel.getGuild().getId().equals(bot.getRelayChannel().getGuild().getId()))
-					{
-						bot.setChannel(channel);
-						reply(msg, "Set channel to \"" + channel.getName() +"\" in guild \"" + channel.getGuild().getName() + "\"");
-					}
-					else
-					{
-						reply(msg, "I can't switch to that channel until you turn off that relay.");
-					}
-				}
-			}
+			setVoiceChannel(msg, cmd);
 		}
 		else if (cmd[0].equals("connect"))
 		{
-			if (bot.isConnected())
-			{
-				reply(msg, "I'm all ready and waiting for you.");
-			}
-			else
-			{
-				if (bot.connectAudio())
-				{
-					reply(msg, "Connecting to channel...");
-				}
-				else
-				{
-					reply(msg, "You still haven't told me which channel to go to.\n*Hint: use !readchannel or !setchannel*");
-				}
-			}
+			connectVoice(msg, cmd);
 		}
 		else if (cmd[0].equals("disconnect"))
 		{
-			if (bot.isConnected())
-			{
-				reply(msg, "Disconnecting from channel...");
-			}
-			else
-			{
-				reply(msg, "It's okay, I'm not connected.");
-			}
-			bot.disconnectAudio();
+			disconnectVoice(msg, cmd);
 		}
 		else if (cmd[0].equals("reconnect"))
 		{
-			if (bot.reconnectChannel())
-			{
-				reply(msg, "Attempting to move back into channel, please hold...");
-			}
-			else
-			{
-				reply(msg, "Everything is fine.");
-			}
+			reconnectVoice(msg, cmd);
 		}
 		else if (cmd[0].equals("youtube"))
 		{
-			if (cmd.length < 2)
-			{
-				reply(msg, "Copy the video ID from the URL (after v=) like so: ```!youtube <video_ID>```");
-			}
-			else if (!bot.isConnected())
-			{
-				reply(msg, "I need to connect to a channel first.");
-			}
-			else
-			{
-				bot.loadYoutube(msg.getChannel(), cmd[1]);
-			}
+			loadYoutube(msg, cmd);
 		}
 		else if (cmd[0].equals("play") || cmd[0].equals("pause") || cmd[0].equals("stop"))
 		{
-			if (!bot.isConnected())
-			{
-				reply(msg, "I need to connect to a channel first.");
-			}
-			else if (!bot.getTrackScheduler().isTrackSet())
-			{
-				reply(msg, "I don't have any audio loaded at the moment.");
-			}
-			else
-			{
-				audioCommand(msg, cmd[0]);
-			}
+			playAudio(msg, cmd);
 		}
 		else if (cmd[0].equals("volume"))
 		{
-			if (cmd.length < 2)
-			{
-				reply(msg, "Please specify a numeric volume like so (default is 100): ```!volume <value>```");
-			}
-			else
-			{
-				try {
-					int volume = Math.min(150, Math.max(Integer.parseInt(cmd[1]), 0));
-					bot.getTrackScheduler().setVolume(volume);
-					reply(msg, "Set volume to " + volume + "%");
-				} catch (NumberFormatException e) {
-					reply(msg, "What part of 'number' do you not understand?");
-				}
-			}
+			setVolume(msg, cmd);
 		}
 		else if (cmd[0].equals("say"))
 		{
-			if (cmd.length < 2)
-			{
-				reply(msg, "It's okay, I already said nothing.");
-			}
-			else if (bot.sendMessage(String.join(" ", Arrays.copyOfRange(cmd, 1, cmd.length))))
-			{
-				reply(msg, "Message queued.");
-			}
-			else
-			{
-				reply(msg, "Please specify a channel like so: ```!setmsgchannel <channel_id>```");
-			}
+			sayMessage(msg, cmd);
 		}
 		else if (cmd[0].equals("relay"))
 		{
-			if (cmd.length < 2)
-			{
-				reply(msg, "I need somewhere to relay to.");
-			}
-			else
-			{
-				VoiceChannel channel = voiceChannelFromId(msg, cmd[1]);
-				
-				if (channel != null)
-				{
-					VoiceChannel from = bot.getVoiceChannel();
-					if (!(from != null && from.getGuild().getId().equals(channel.getGuild().getId())))
-					{
-						bot.setRelayChannel(channel);
-					}
-					else
-					{
-						reply(msg, "Relay channel can't be in the same guild.");
-					}
-				}
-			}
+			setRelayChannel(msg, cmd);
 		}
 		else if (cmd[0].equals("relaymode"))
 		{
-			if (cmd.length < 2)
-			{
-				switch (bot.getRelayMode())
-				{
-				case 0:
-					reply(msg, "Relay is currently disabled.");
-					break;
-				case 1:
-					reply(msg, "One-way relay currently enabled.");
-					break;
-				case 2:
-					reply(msg, "Two-way conduit currently enabled.");
-				}
-			}
-			else
-			{
-				try {
-					int status = Integer.parseInt(cmd[1]);
-					if (status != 0 && status != 1 && status != 2)
-					{
-						reply(msg, "Relay mode must be either 0, 1, or 2");
-					}
-					else
-					{
-						bot.setRelayStatus(status);
-					}
-				} catch (NumberFormatException e) {
-					reply(msg, "Relay mode must be a number: ```(0, 1, or 2)```");
-				}
-			}
+			setRelayMode(msg, cmd);
 		}
 	}
 	
@@ -400,6 +217,268 @@ public class EventListenerImpl extends ListenerAdapter {
 		{
 			reply(msg, "Stopping audio...");
 			bot.getTrackScheduler().stop();
+		}
+	}
+	
+	private void setTextChannel(Message msg, String[] cmd)
+	{
+		if (cmd.length < 2)
+		{
+			reply(msg, "Please specify a channel like so: ```!setmsgchannel <channel_id>```");
+		}
+		else
+		{
+			MessageChannel channel = messageChannelFromId(msg, cmd[1]);
+			
+			if (channel != null)
+			{
+				bot.setMsgChannel(channel);
+				reply(msg, "Set channel to \"" + channel.getName() +"\" (type: " + channel.getType().toString() + ")");
+			}
+		}
+	}
+	
+	private void setPrivateChannel(Message msg, String[] cmd)
+	{
+		if (cmd.length < 2)
+		{
+			reply(msg, "Please specify a user like so: ```!setuserchannel <user_id>```");
+		}
+		else
+		{
+			PrivateChannel channel = privateChannelFromUserId(msg, cmd[1]);
+			
+			if (channel != null)
+			{
+				bot.setMsgChannel(channel);
+				reply(msg, "Set channel to private channel with user " + channel.getUser().getName() + " (channel id: " + channel.getId() + ")");
+			}
+		}
+	}
+	
+	private void readVoiceChannel(Message msg, String[] cmd)
+	{
+		VoiceChannel channel = bot.findAdminChannel();
+		if (channel == null)
+		{
+			reply(msg, "I can't find you anywhere!");
+		}
+		else if (bot.getRelayChannel() == null || !channel.getGuild().getId().equals(bot.getRelayChannel().getGuild().getId()))
+		{
+			bot.setChannel(channel);
+			reply(msg, "Set channel to \"" + channel.getName() +"\" in guild \"" + channel.getGuild().getName() + "\"");
+		}
+		else
+		{
+			reply(msg, "I can't switch to your channel until you turn off that relay.");
+		}
+	}
+	
+	private void setVoiceChannel(Message msg, String[] cmd)
+	{
+		if (cmd.length < 2)
+		{
+			reply(msg, "Please specify a channel like so: ```!setchannel <channel_id>```");
+		}
+		else
+		{
+			VoiceChannel channel = voiceChannelFromId(msg, cmd[1]);
+			
+			if (channel != null)
+			{
+				if (bot.getRelayChannel() == null || !channel.getGuild().getId().equals(bot.getRelayChannel().getGuild().getId()))
+				{
+					bot.setChannel(channel);
+					reply(msg, "Set channel to \"" + channel.getName() +"\" in guild \"" + channel.getGuild().getName() + "\"");
+				}
+				else
+				{
+					reply(msg, "I can't switch to that channel until you turn off that relay.");
+				}
+			}
+		}
+	}
+	
+	private void connectVoice(Message msg, String[] cmd)
+	{
+		if (bot.isConnected())
+		{
+			reply(msg, "I'm all ready and waiting for you.");
+		}
+		else
+		{
+			if (bot.connectAudio())
+			{
+				reply(msg, "Connecting to channel...");
+			}
+			else
+			{
+				reply(msg, "You still haven't told me which channel to go to.\n*Hint: use !readchannel or !setchannel*");
+			}
+		}
+	}
+	
+	private void disconnectVoice(Message msg, String[] cmd)
+	{
+		if (bot.isConnected())
+		{
+			reply(msg, "Disconnecting from channel...");
+		}
+		else
+		{
+			reply(msg, "It's okay, I'm not connected.");
+		}
+		bot.disconnectAudio();
+	}
+	
+	private void reconnectVoice(Message msg, String[] cmd)
+	{
+		if (bot.reconnectChannel())
+		{
+			reply(msg, "Attempting to move back into channel, please hold...");
+		}
+		else
+		{
+			reply(msg, "Everything is fine.");
+		}
+	}
+	
+	private void loadYoutube(Message msg, String[] cmd)
+	{
+		if (cmd.length < 2)
+		{
+			reply(msg, "Copy the video ID from the URL (after v=) like so: ```!youtube <video_ID>```");
+		}
+		else if (!bot.isConnected())
+		{
+			reply(msg, "I need to connect to a channel first.");
+		}
+		else
+		{
+			bot.loadYoutube(msg.getChannel(), cmd[1]);
+		}
+	}
+	
+	private void playAudio(Message msg, String[] cmd)
+	{
+		if (!bot.isConnected())
+		{
+			reply(msg, "I need to connect to a channel first.");
+		}
+		else if (!bot.getTrackScheduler().isTrackSet())
+		{
+			reply(msg, "I don't have any audio loaded at the moment.");
+		}
+		else
+		{
+			audioCommand(msg, cmd[0]);
+		}
+	}
+	
+	private void setVolume(Message msg, String[] cmd)
+	{
+		if (cmd.length < 2)
+		{
+			reply(msg, "Please specify a numeric volume like so (default is 100): ```!volume <value>```");
+		}
+		else
+		{
+			try {
+				int volume = Math.min(150, Math.max(Integer.parseInt(cmd[1]), 0));
+				bot.getTrackScheduler().setVolume(volume);
+				reply(msg, "Set volume to " + volume + "%");
+			} catch (NumberFormatException e) {
+				reply(msg, "What part of 'number' do you not understand?");
+			}
+		}
+	}
+	
+	private void sayMessage(Message msg, String cmd[])
+	{
+		if (cmd.length < 2)
+		{
+			reply(msg, "It's okay, I already said nothing.");
+		}
+		else if (bot.sendMessage(String.join(" ", Arrays.copyOfRange(cmd, 1, cmd.length))))
+		{
+			reply(msg, "Message queued.");
+		}
+		else
+		{
+			reply(msg, "Please specify a channel like so: ```!setmsgchannel <channel_id>```");
+		}
+	}
+	
+	private void setRelayChannel(Message msg, String cmd[])
+	{
+		if (cmd.length < 2)
+		{
+			reply(msg, "I need somewhere to relay to.");
+		}
+		else
+		{
+			VoiceChannel channel = voiceChannelFromId(msg, cmd[1]);
+			
+			if (channel != null)
+			{
+				VoiceChannel from = bot.getVoiceChannel();
+				if (!(from != null && from.getGuild().getId().equals(channel.getGuild().getId())))
+				{
+					bot.setRelayChannel(channel);
+				}
+				else
+				{
+					reply(msg, "Relay channel can't be in the same guild.");
+				}
+			}
+		}
+	}
+	
+	private void setRelayMode(Message msg, String cmd[])
+	{
+		if (cmd.length < 2)
+		{
+			switch (bot.getRelayMode())
+			{
+			case 0:
+				reply(msg, "Relay is currently disabled.");
+				break;
+			case 1:
+				reply(msg, "One-way relay currently enabled.");
+				break;
+			case 2:
+				reply(msg, "Two-way conduit currently enabled.");
+			}
+		}
+		else
+		{
+			try {
+				int status = Integer.parseInt(cmd[1]);
+				if (status != 0 && status != 1 && status != 2)
+				{
+					reply(msg, "Relay mode must be either 0, 1, or 2");
+				}
+				else
+				{
+					bot.setRelayStatus(status);
+					String str = "oof";
+					switch (status)
+					{
+					case 0:
+						str = "Relay disabled.";
+						break;
+					case 1:
+						str = "Relay set to one-way.";
+						break;
+					case 2:
+						str = "Relay set to two-way.";
+					}
+					
+					reply(msg, str);
+				}
+			} catch (NumberFormatException e) {
+				reply(msg, "Relay mode must be a number: ```(0, 1, or 2)```");
+			}
 		}
 	}
 	
