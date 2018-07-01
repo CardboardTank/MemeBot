@@ -33,7 +33,21 @@ public class Strings {
 			"scrub",
 			"skrub",
 			"scam",
-			"gay"
+			"gay",
+			"fat",
+			"hell",
+			"retard",
+			"idiot",
+			"moron",
+			"dumb",
+			"dummy",
+			"loser",
+			"trash",
+			"fool",
+			"braindead",
+			"brainless",
+			"irrelevant",
+			"thick"
 	};
 	
 	public static final String[] sadWords = {
@@ -43,7 +57,14 @@ public class Strings {
 			"depression",
 			"depressed",
 			"sorrow",
-			"sorrowful"
+			"sorrowful",
+			"grief",
+			"mourn",
+			"down",
+			"bitter",
+			"low",
+			"gloomy"
+			
 	};
 	
 	public static final String youtubeUrl = "https://www.youtube.com/watch?v=";
@@ -58,7 +79,7 @@ public class Strings {
 			"Receiving a shipment from %",
 			"Detected an incoming shipment from %",
 			"% is sending a shipment",
-			"Shipment detected arriving from %",
+			"Shipment detected, arriving from %",
 			"Shipment from % has been successfully delivered"
 	};
 	

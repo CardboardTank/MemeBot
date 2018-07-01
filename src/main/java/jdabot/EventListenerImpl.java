@@ -27,7 +27,7 @@ public class EventListenerImpl extends ListenerAdapter {
 			return;
 		}
 		if (MemeBot.DEBUG_MODE && ((!event.getChannel().getId().equals(MemeBot.DEBUG_CHANNEL)) &&
-				!(event.getAuthor().getId().equals(MemeBot.ADMIN_ID) && event.getChannelType().equals(ChannelType.PRIVATE))))
+				!(isIdAdmin(event.getAuthor().getId()) && event.getChannelType().equals(ChannelType.PRIVATE))))
 		{
 			return;
 		}
@@ -37,7 +37,7 @@ public class EventListenerImpl extends ListenerAdapter {
 			return;
 		}
 		
-		if (event.getChannelType().equals(ChannelType.PRIVATE) && !(isIdAdmin(event.getAuthor().getId()))
+		if (event.getChannelType().equals(ChannelType.PRIVATE) && !(isIdAdmin(event.getAuthor().getId())))
 		{
 			String fwd = event.getAuthor().getName() + " (" + event.getAuthor().getId() + ") sends: " + event.getMessage().getContentDisplay();
 			bot.getJDA().getTextChannelById(MemeBot.PM_CHANNEL).sendMessage(fwd).queue();
@@ -71,7 +71,7 @@ public class EventListenerImpl extends ListenerAdapter {
 	
 	private boolean isIdAdmin(String id) {
 		for (int i = 0; i < MemeBot.ADMIN_IDS.length; i++) {
-			if (i == id) {
+			if (MemBot.ADMIN_IDS[i] == id) {
 				return true;
 			}
 		}
