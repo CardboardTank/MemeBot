@@ -18,3 +18,4 @@
 `!relay <channel_id>` *selects a voice channel to relay audio to (must be in a different guild)*
 `!relaymode <mode>` *sets the relay mode (0 = relay disabled, 1 = one-way, 2 = two-way)*
 `!showperms <guild_id>` *shows all permissions MemeBot has in a guild*
+`!showallguilds` *shows all guilds MemeBot is in*

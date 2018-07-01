@@ -115,6 +115,10 @@ public class EventListenerImpl extends ListenerAdapter {
 		{
 			showGuildPermissions(msg, cmd);
 		}
+		else if (cmd[0].equals("showallguilds"))
+		{
+			showAllGuilds(msg);
+		}
 		else if (cmd[0].equals("setmsgchannel"))
 		{
 			setTextChannel(msg, cmd);
@@ -200,7 +204,27 @@ public class EventListenerImpl extends ListenerAdapter {
 				reply(msg, out);
 			}
 		}
+	}
+	
+	private void showAllGuilds(Message msg)
+	{
+		List<Guild> guilds;
+		if (msg.getAuthor().getId().equals(MemeBot.OWNER_ID))
+		{
+			guilds = bot.getJDA().getGuilds();
+		}
+		else
+		{
+			guilds = bot.getJDA().getMutualGuilds(msg.getAuthor());
+		}
+		String out = "All servers MemeBot can access:```";
+		for (Guild g : guilds)
+		{
+			out += g.getName() + " (id: " + g.getId() + ")\n";
+		}
+		out += "```";
 		
+		reply(msg, out);
 	}
 	
 	private VoiceChannel voiceChannelFromId(Message msg, String channelId)
