@@ -74,8 +74,7 @@ public class EventListenerImpl extends ListenerAdapter {
 	
 	private boolean isIdAdmin(String id) {
 		for (int i = 0; i < MemeBot.ADMIN_IDS.length; i++) {
-			if (MemeBot.ADMIN_IDS[i] == id) {
-
+			if (MemeBot.ADMIN_IDS[i].equals(id)) {
 				return true;
 			}
 		}
@@ -95,7 +94,7 @@ public class EventListenerImpl extends ListenerAdapter {
 		{
 			reply(msg, "Pong!");
 		}
-		else if (msg.getChannelType().equals(ChannelType.PRIVATE) && msg.getAuthor().getId().equals(MemeBot.ADMIN_ID))
+		else if (msg.getChannelType().equals(ChannelType.PRIVATE) && isIdAdmin(MemeBot.ADMIN_ID))
 		{
 			executeAdminCommand(msg, cmd);
 		}

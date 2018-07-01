@@ -46,7 +46,7 @@ public class MemeBot implements EventListener {
 	public static String DEBUG_CHANNEL;
 	public static String ADMIN_ID;
 	//TODO: Use config file
-	public static String[2] ADMIN_IDS = {
+	public static String[] ADMIN_IDS = {
 		"270172140886687744",
 		"97128281324662784"
 	};
