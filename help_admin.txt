@@ -1,0 +1,5 @@
+***All Admin Commands:***
+`!help` *shows this message.*
+`!quit` *shuts down MemeBot.*
+`!setmsgchannel <channel_id>` *selects a text channel to use from its ID*
+`!setuserchannel <user_id>` *selects the private text channel from a user's ID*

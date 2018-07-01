@@ -60,12 +60,6 @@ public class Strings {
 			"Shipment from % has been successfully delivered"
 	};
 	
-	public static final String[] deleteResponses = {
-			"Oof! Ouchie! My poor message!",
-			"whyd u delete my message :(",
-			"Hey, has anyone seen my message?"
-	};
-	
 	public static final String saltPath = "res/salt.png";
 	public static final String cuffsPath = "res/cuffs.gif";
 	public static final String kittyFolder = "res/kitty";

@@ -46,6 +46,9 @@ public class MemeBot implements EventListener {
 	public static String DEBUG_CHANNEL;
 	public static String ADMIN_ID;
 	public static String PM_CHANNEL;
+	
+	public static String HELP_ADMIN;
+	
 	private static final SimpleLog LOG = SimpleLog.getLog(MemeBot.class.getName());
 	
 	private JDA jda;
@@ -70,10 +73,15 @@ public class MemeBot implements EventListener {
 		throws LoginException, RateLimitedException, InterruptedException
 	{
 		String jsonStr = "";
+		HELP_ADMIN = "";
 		try {
 			for (String line : Files.readAllLines(Paths.get("config.json")))
 			{
 				jsonStr += line;
+			}
+			for (String line : Files.readAllLines(Paths.get("help_admin.txt")))
+			{
+				HELP_ADMIN += line + "\n";
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

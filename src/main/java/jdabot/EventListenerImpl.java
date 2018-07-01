@@ -78,9 +78,9 @@ public class EventListenerImpl extends ListenerAdapter {
 			return;
 		}
 		
-		if (cmd[0].equals("quit"))
+		if (cmd[0].equals("ping"))
 		{
-			msg.getChannel().sendMessage("**Disconnecting...**\n\n*\"" + Strings.getDisconnectFlavorText() + "\"*").queue((m) -> bot.getJDA().shutdown());
+			reply(msg, "Pong!");
 		}
 		else if (msg.getChannelType().equals(ChannelType.PRIVATE) && msg.getAuthor().getId().equals(MemeBot.ADMIN_ID))
 		{
@@ -90,7 +90,15 @@ public class EventListenerImpl extends ListenerAdapter {
 	
 	private void executeAdminCommand(Message msg, String[] cmd)
 	{
-		if (cmd[0].equals("setmsgchannel"))
+		if (cmd[0].equals("quit"))
+		{
+			msg.getChannel().sendMessage("**Disconnecting...**\n\n*\"" + Strings.getDisconnectFlavorText() + "\"*").queue((m) -> bot.getJDA().shutdown());
+		}
+		else if (cmd[0].equals("help"))
+		{
+			showHelpMessage(msg, cmd, true);
+		}
+		else if (cmd[0].equals("setmsgchannel"))
 		{
 			setTextChannel(msg, cmd);
 		}
@@ -141,6 +149,18 @@ public class EventListenerImpl extends ListenerAdapter {
 		else if (cmd[0].equals("relaymode"))
 		{
 			setRelayMode(msg, cmd);
+		}
+	}
+	
+	private void showHelpMessage(Message msg, String[] cmd, boolean admin)
+	{
+		String help = (admin) ? MemeBot.HELP_ADMIN : "unsupported";
+		
+		String[] lines = help.split("\n");
+		
+		for (String line : lines)
+		{
+			reply(msg, line);
 		}
 	}
 	
