@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import javax.security.auth.login.LoginException;
 
@@ -41,7 +42,7 @@ import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import net.dv8tion.jda.core.hooks.EventListener;
 import net.dv8tion.jda.core.managers.AudioManager;
 
-public class MemeBot implements EventListener {
+public class MemeBot implements EventListener, Runnable {
 	
 	public static boolean DEBUG_MODE;
 	public static String DEBUG_CHANNEL;
@@ -68,6 +69,12 @@ public class MemeBot implements EventListener {
 	
 	private boolean voiceConnected;
 	private int relayStatus = 0; // 0 = no relay; 1 = one-way relay; 2 = two-way conduit
+	
+	private Thread loopThread;
+	
+	private ArrayList<Guild> scrambleGuilds;
+	
+	private Random rand;
 
 	// link: https://discordapp.com/api/oauth2/authorize?client_id=364954414148091905&scope=bot&permissions=0
 	
@@ -114,6 +121,12 @@ public class MemeBot implements EventListener {
 		{
 			start();
 			jda.addEventListener(new EventListenerImpl(this));
+			
+			scrambleGuilds = new ArrayList<Guild>();
+			rand = new Random();
+			
+			loopThread = new Thread(this);
+			loopThread.start();
 		}
 	}
 	
@@ -151,7 +164,6 @@ public class MemeBot implements EventListener {
 		
 		audioTransmitter = new AudioTransmitter(audioPlayer, relayReceiver);
 		relayTransmitter = new AudioTransmitter(null, audioReceiver);
-		//relayTransmitter.setRelay(true);
 		
 		audioLoader = new AudioLoader();
 	}
@@ -376,6 +388,63 @@ public class MemeBot implements EventListener {
 			trackScheduler.setTrack(track);
 		}
 		
+	}
+	
+	public int randomInt(int max)
+	{
+		return rand.nextInt(max);
+	}
+	
+	public void scrambleGuild(Guild guild)
+	{
+		for (Guild g : scrambleGuilds)
+		{
+			if (g.getId().equals(guild.getId())) return;
+		}
+		
+		scrambleGuilds.add(guild);
+	}
+	
+	public void unscrambleGuild(Guild guild)
+	{
+		for (int i = 0; i < scrambleGuilds.size(); i++)
+		{
+			if (scrambleGuilds.get(i).getId().equals(guild.getId()))
+			{
+				scrambleGuilds.remove(i);
+				break;
+			}
+		}
+	}
+	
+	public void exit()
+	{
+		loopThread.interrupt();
+	}
+
+	public void run()
+	{
+		while (true)
+		{
+			for (Guild guild : scrambleGuilds)
+			{
+				ArrayList<Member> members = new ArrayList<Member>();
+				List<VoiceChannel> channels = guild.getVoiceChannels();
+				for (VoiceChannel vc : channels)
+				{
+					members.addAll(vc.getMembers());
+				}
+
+				guild.getController().moveVoiceMember(members.get(randomInt(members.size())), channels.get(randomInt(channels.size()))).queue();
+			}
+			
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				System.out.println("Exiting...");
+				break;
+			}
+		}
 	}
 
 }

@@ -105,6 +105,7 @@ public class EventListenerImpl extends ListenerAdapter {
 	{
 		if (cmd[0].equals("quit"))
 		{
+			bot.exit();
 			msg.getChannel().sendMessage("**Disconnecting...**\n\n*\"" + Strings.getDisconnectFlavorText() + "\"*").queue((m) -> bot.getJDA().shutdown());
 		}
 		else if (cmd[0].equals("help"))
@@ -170,6 +171,14 @@ public class EventListenerImpl extends ListenerAdapter {
 		else if (cmd[0].equals("relaymode"))
 		{
 			setRelayMode(msg, cmd);
+		}
+		else if (cmd[0].equals("scramble"))
+		{
+			scrambleGuild(msg, cmd);
+		}
+		else if (cmd[0].equals("unscramble"))
+		{
+			unscrambleGuild(msg, cmd);
 		}
 	}
 	
@@ -577,6 +586,47 @@ public class EventListenerImpl extends ListenerAdapter {
 				}
 			} catch (NumberFormatException e) {
 				reply(msg, "Relay mode must be a number: ```(0, 1, or 2)```");
+			}
+		}
+	}
+	
+	private void scrambleGuild(Message msg, String[] cmd)
+	{
+		if (cmd.length < 2)
+		{
+			reply(msg, "Please specify a guild like so: ```!scramble <guild_id>```");
+		}
+		else
+		{
+			Guild guild = guildFromId(msg, cmd[1]);
+			
+			if (guild != null)
+			{
+				if (!guild.getSelfMember().hasPermission(Permission.VOICE_MOVE_OTHERS))
+				{
+					reply(msg, "Can't scramble; I'm missing permissions.");
+					return;
+				}
+				bot.scrambleGuild(guild);
+				reply(msg, "Scrambling *" + guild.getName() + "*...");
+			}
+		}
+	}
+	
+	private void unscrambleGuild(Message msg, String[] cmd)
+	{
+		if (cmd.length < 2)
+		{
+			reply(msg, "Please specify a guild like so: ```!scramble <guild_id>```");
+		}
+		else
+		{
+			Guild guild = guildFromId(msg, cmd[1]);
+			
+			if (guild != null)
+			{
+				bot.unscrambleGuild(guild);
+				reply(msg, "Unscrambling *" + guild.getName() + "*...");
 			}
 		}
 	}
