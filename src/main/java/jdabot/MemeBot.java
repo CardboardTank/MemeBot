@@ -27,6 +27,7 @@ import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.audio.hooks.ConnectionStatus;
 import net.dv8tion.jda.core.entities.Game;
+import net.dv8tion.jda.core.entities.Game.GameType;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
@@ -38,7 +39,6 @@ import net.dv8tion.jda.core.events.ReadyEvent;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import net.dv8tion.jda.core.hooks.EventListener;
 import net.dv8tion.jda.core.managers.AudioManager;
-import net.dv8tion.jda.core.utils.SimpleLog;
 
 public class MemeBot implements EventListener {
 	
@@ -46,7 +46,7 @@ public class MemeBot implements EventListener {
 	public static String DEBUG_CHANNEL;
 	public static String ADMIN_ID;
 	public static String PM_CHANNEL;
-	private static final SimpleLog LOG = SimpleLog.getLog(MemeBot.class);
+	private static final SimpleLog LOG = SimpleLog.getLog(MemeBot.class.getName());
 	
 	private JDA jda;
 	private File[] kitties;
@@ -120,7 +120,7 @@ public class MemeBot implements EventListener {
 	private void start()
 	{
 		voiceConnected = false;
-		jda.getPresence().setGame(Game.of("with your credit card"));
+		jda.getPresence().setGame(Game.of(GameType.DEFAULT, "with your credit card"));
 		playerManager = new DefaultAudioPlayerManager();
 		AudioSourceManagers.registerRemoteSources(playerManager);
 		
@@ -172,20 +172,20 @@ public class MemeBot implements EventListener {
 	
 	public void sendCube(Message msg)
 	{
-		LOG.info("Sending a cube for message \"" + msg.getContent() + "\" in channel " + msg.getChannel().getName() + " (id: " + msg.getChannel().getId() + ")");
-		msg.getChannel().sendMessage("```" + Strings.cubeString(msg.getContent()) + "```").queue();
+		LOG.info("Sending a cube for message \"" + msg.getContentDisplay() + "\" in channel " + msg.getChannel().getName() + " (id: " + msg.getChannel().getId() + ")");
+		msg.getChannel().sendMessage("```" + Strings.cubeString(msg.getContentDisplay()) + "```").queue();
 	}
 	
 	public void sendSalt(Message msg)
 	{
-		LOG.info("Sending some salt for message \"" + msg.getContent() + "\" in channel " + msg.getChannel().getName() + " (id: " + msg.getChannel().getId() + ")");
+		LOG.info("Sending some salt for message \"" + msg.getContentDisplay() + "\" in channel " + msg.getChannel().getName() + " (id: " + msg.getChannel().getId() + ")");
 		String saltMsg = Strings.constructSaltShipment(msg.getAuthor());
 		msg.getChannel().sendFile(salt, new MessageBuilder().append(saltMsg).build()).queue();
 	}
 	
 	public void sendKitty(Message msg)
 	{
-		LOG.info("Sending a kitty for message \"" + msg.getContent() + "\" in channel " + msg.getChannel().getName() + " (id: " + msg.getChannel().getId() + ")");
+		LOG.info("Sending a kitty for message \"" + msg.getContentDisplay() + "\" in channel " + msg.getChannel().getName() + " (id: " + msg.getChannel().getId() + ")");
 		int index = (int) Math.floor(Math.random() * kitties.length);
 		int pIndex = Strings.sadMsg.indexOf("%");
 		String str = Strings.sadMsg.substring(0, pIndex) + msg.getAuthor().getAsMention() + Strings.sadMsg.substring(pIndex+1);
@@ -195,7 +195,7 @@ public class MemeBot implements EventListener {
 	
 	public void sendCuffs(Message msg)
 	{
-		LOG.info("Sending some cuffs for message \"" + msg.getContent() + "\" in channel " + msg.getChannel().getName() + " (id: " + msg.getChannel().getId() + ")");
+		LOG.info("Sending some cuffs for message \"" + msg.getContentDisplay() + "\" in channel " + msg.getChannel().getName() + " (id: " + msg.getChannel().getId() + ")");
 		msg.getChannel().sendFile(cuffsGif, new MessageBuilder().append(msg.getAuthor()).build()).queue();
 	}
 	

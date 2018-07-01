@@ -27,7 +27,7 @@ public class AudioTransmitter implements AudioSendHandler {
 		else
 		{
 			AudioFrame frame = player.provide();
-			lastFrame = (frame == null) ? null : frame.data;
+			lastFrame = (frame == null) ? null : frame.getData();
 		}
 		return lastFrame != null;
 	}

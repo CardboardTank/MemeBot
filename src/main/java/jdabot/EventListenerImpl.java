@@ -22,7 +22,7 @@ public class EventListenerImpl extends ListenerAdapter {
 	
 	public void onMessageReceived(MessageReceivedEvent event)
 	{
-		if (event.getMessage().getContent().isEmpty())
+		if (event.getMessage().getContentDisplay().isEmpty())
 		{
 			return;
 		}
@@ -39,13 +39,13 @@ public class EventListenerImpl extends ListenerAdapter {
 		
 		if (event.getChannelType().equals(ChannelType.PRIVATE) && !(event.getAuthor().getId().equals(MemeBot.ADMIN_ID)))
 		{
-			String fwd = event.getAuthor().getName() + " (" + event.getAuthor().getId() + ") sends: " + event.getMessage().getContent();
+			String fwd = event.getAuthor().getName() + " (" + event.getAuthor().getId() + ") sends: " + event.getMessage().getContentDisplay();
 			bot.getJDA().getTextChannelById(MemeBot.PM_CHANNEL).sendMessage(fwd).queue();
 			return;
 		}
 		
 		Message msg = event.getMessage();
-		String msgStr = msg.getContent();
+		String msgStr = msg.getContentDisplay();
 		
 		if (msgStr.charAt(0) == '!')
 		{
@@ -71,7 +71,7 @@ public class EventListenerImpl extends ListenerAdapter {
 	
 	private void executeCommand(Message msg)
 	{
-		String[] cmd = parseCommand(msg.getContent());
+		String[] cmd = parseCommand(msg.getContentDisplay());
 		if (cmd.length == 0 || cmd[0].trim().isEmpty())
 		{
 			reply(msg, "What the hell are you trying to do!?");
