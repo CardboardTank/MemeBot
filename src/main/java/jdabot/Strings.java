@@ -41,12 +41,14 @@ public class Strings {
 			"sadness",
 			"sad",
 			"depression",
-			"depressed"
+			"depressed",
+			"sorrow",
+			"sorrowful"
 	};
 	
 	public static final String youtubeUrl = "https://www.youtube.com/watch?v=";
 	
-	public static final String[] selfWords = { "i", "im", "ive", "ill", "me" };
+	public static final String[] selfWords = { "i", "im", "ive", "ill", "me", "myself" };
 	
 	public static final String cuffTrigger = "cuffs";
 	
