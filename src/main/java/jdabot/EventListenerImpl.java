@@ -1,8 +1,11 @@
 package jdabot;
 
 import java.util.Arrays;
+import java.util.List;
 
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.ChannelType;
+import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.PrivateChannel;
@@ -98,6 +101,10 @@ public class EventListenerImpl extends ListenerAdapter {
 		{
 			showHelpMessage(msg, cmd, true);
 		}
+		else if (cmd[0].equals("showperms"))
+		{
+			showGuildPermissions(msg, cmd);
+		}
 		else if (cmd[0].equals("setmsgchannel"))
 		{
 			setTextChannel(msg, cmd);
@@ -156,12 +163,34 @@ public class EventListenerImpl extends ListenerAdapter {
 	{
 		String help = (admin) ? MemeBot.HELP_ADMIN : "unsupported";
 		
-		String[] lines = help.split("\n");
-		
-		for (String line : lines)
+		reply(msg, help);
+	}
+	
+	private void showGuildPermissions(Message msg, String[] cmd)
+	{
+		if (cmd.length < 2)
 		{
-			reply(msg, line);
+			reply(msg, "Please specify a guild like so: ```!setmsgchannel <guild_id>```");
 		}
+		else
+		{
+			Guild guild = guildFromId(msg, cmd[1]);
+			
+			if (guild != null)
+			{
+				List<Permission> perms = guild.getSelfMember().getPermissions();
+				String out = "Permissions for server *" + guild.getName() + "*:```";
+				for (Permission p : perms)
+				{
+					out += p.getName() + "\n";
+				}
+				
+				out += "```";
+				
+				reply(msg, out);
+			}
+		}
+		
 	}
 	
 	private VoiceChannel voiceChannelFromId(Message msg, String channelId)
@@ -194,6 +223,22 @@ public class EventListenerImpl extends ListenerAdapter {
 		}
 		
 		return channel;
+	}
+	
+	private Guild guildFromId(Message msg, String guildId)
+	{
+		Guild guild = null;
+		try {
+			guild = bot.getJDA().getGuildById(guildId);
+			if (guild == null)
+			{
+				reply(msg, "I traveled the world and I found everything except that guild.");
+			}
+		} catch (NumberFormatException e) {
+			reply(msg, "That's not a guild, sunshine.");
+		}
+		
+		return guild;
 	}
 	
 	private PrivateChannel privateChannelFromUserId(Message msg, String userId)
