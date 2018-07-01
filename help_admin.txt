@@ -1,5 +1,19 @@
 ***All Admin Commands:***
-`!help` *shows this message.*
-`!quit` *shuts down MemeBot.*
+
+`!help` *shows this message*
+`!quit` *shuts down MemeBot*
 `!setmsgchannel <channel_id>` *selects a text channel to use from its ID*
 `!setuserchannel <user_id>` *selects the private text channel from a user's ID*
+`!findchannel` *selects the voice channel that you are in*
+`!setvoicechannel <channel_id>` *selects a voice channel to use from its ID*
+`!connect` *connects MemeBot to the selected voice channel*
+`!disconnect` *disconnects MemeBot from the selected voice channel*
+`!reconnect` *attempts to reconnect to the selected voice channel*
+`!youtube <watch_code>` *loads a video to play from YouTube from its watch code*
+`!play` *plays/resumes an audio track*
+`!pause` *pauses the current audio track*
+`!stop` *stops the current audio track, unloading it*
+`!volume <volume>` *sets the volume of the audio track (min: 0, max: 150, default: 100)*
+`!say <msg>` *outputs a message to the selected text channel*
+`!relay <channel_id>` *selects a voice channel to relay audio to (must be in a different guild)*
+`!relaymode <mode>` *sets the relay mode (0 = relay disabled, 1 = one-way, 2 = two-way)*

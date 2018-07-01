@@ -64,7 +64,6 @@ public class Strings {
 			"bitter",
 			"low",
 			"gloomy"
-			
 	};
 	
 	public static final String youtubeUrl = "https://www.youtube.com/watch?v=";
