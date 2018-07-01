@@ -37,7 +37,7 @@ public class EventListenerImpl extends ListenerAdapter {
 			return;
 		}
 		
-		if (event.getChannelType().equals(ChannelType.PRIVATE) && !(event.getAuthor().getId().equals(MemeBot.ADMIN_ID)))
+		if (event.getChannelType().equals(ChannelType.PRIVATE) && !(isIdAdmin(event.getAuthor().getId()))
 		{
 			String fwd = event.getAuthor().getName() + " (" + event.getAuthor().getId() + ") sends: " + event.getMessage().getContentDisplay();
 			bot.getJDA().getTextChannelById(MemeBot.PM_CHANNEL).sendMessage(fwd).queue();
@@ -67,6 +67,15 @@ public class EventListenerImpl extends ListenerAdapter {
 		{
 			bot.sendCuffs(msg);
 		}
+	}
+	
+	private boolean isIdAdmin(String id) {
+		for (int i = 0; i < MemeBot.ADMIN_IDS.length; i++) {
+			if (i == id) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private void executeCommand(Message msg)
