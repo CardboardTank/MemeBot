@@ -94,7 +94,7 @@ public class EventListenerImpl extends ListenerAdapter {
 		{
 			reply(msg, "Pong!");
 		}
-		else if (msg.getChannelType().equals(ChannelType.PRIVATE) && isIdAdmin(MemeBot.ADMIN_ID))
+		else if (msg.getChannelType().equals(ChannelType.PRIVATE) && isIdAdmin(msg.getAuthor().getId()))
 		{
 			executeAdminCommand(msg, cmd);
 		}
@@ -332,7 +332,7 @@ public class EventListenerImpl extends ListenerAdapter {
 	
 	private void readVoiceChannel(Message msg, String[] cmd)
 	{
-		VoiceChannel channel = bot.findAdminChannel();
+		VoiceChannel channel = bot.findAdminChannel(msg.getAuthor().getId());
 		if (channel == null)
 		{
 			reply(msg, "I can't find you anywhere!");

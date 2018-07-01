@@ -10,6 +10,7 @@ import java.util.List;
 
 import javax.security.auth.login.LoginException;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
@@ -44,12 +45,9 @@ public class MemeBot implements EventListener {
 	
 	public static boolean DEBUG_MODE;
 	public static String DEBUG_CHANNEL;
-	public static String ADMIN_ID;
+	public static String OWNER_ID;
 	//TODO: Use config file
-	public static String[] ADMIN_IDS = {
-		"270172140886687744",
-		"97128281324662784"
-	};
+	public static String[] ADMIN_IDS;
 	public static String PM_CHANNEL;
 	
 	public static String HELP_ADMIN;
@@ -95,8 +93,16 @@ public class MemeBot implements EventListener {
 		JSONObject cfg = new JSONObject(jsonStr);
 		DEBUG_MODE = cfg.getBoolean("debug_mode");
 		DEBUG_CHANNEL = cfg.getString("debug_channel");
-		ADMIN_ID = cfg.getString("admin_id");
+		OWNER_ID = cfg.getString("owner_id");
+		JSONArray admins = cfg.getJSONArray("admin_ids");
+		ADMIN_IDS = new String[admins.length() + 1];
 		PM_CHANNEL = cfg.getString("pm_channel");
+		
+		ADMIN_IDS[0] = OWNER_ID;
+		for (int i = 0; i < admins.length(); i++)
+		{
+			ADMIN_IDS[i+1] = admins.getString(i);
+		}
 		
 		MemeBot bot = new MemeBot();
 		JDA jda = new JDABuilder(AccountType.BOT).setToken(cfg.getString("bot_token")).addEventListener(bot).buildAsync();
@@ -156,9 +162,9 @@ public class MemeBot implements EventListener {
 		return jda;
 	}
 	
-	public VoiceChannel findAdminChannel()
+	public VoiceChannel findAdminChannel(String adminId)
 	{
-		User admin = jda.getUserById(ADMIN_ID);
+		User admin = jda.getUserById(adminId);
 		List<Guild> guilds = admin.getMutualGuilds();
 		ArrayList<VoiceChannel> channels = new ArrayList<VoiceChannel>();
 		
@@ -173,7 +179,7 @@ public class MemeBot implements EventListener {
 			members = channels.get(i).getMembers();
 			for (int j = 0; j < members.size(); j++)
 			{
-				if (members.get(j).getUser().getId().equals(ADMIN_ID))
+				if (members.get(j).getUser().getId().equals(adminId))
 				{
 					return channels.get(i);
 				}
