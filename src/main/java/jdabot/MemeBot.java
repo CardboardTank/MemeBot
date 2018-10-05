@@ -67,7 +67,7 @@ public class MemeBot implements EventListener, Runnable {
 	private AudioTransmitter audioTransmitter, relayTransmitter;
 	private AudioReceiver audioReceiver, relayReceiver;
 	
-	private boolean voiceConnected;
+	private boolean voiceConnected, nextTrackLoop;
 	private int relayStatus = 0; // 0 = no relay; 1 = one-way relay; 2 = two-way conduit
 	
 	private Thread loopThread;
@@ -308,6 +308,16 @@ public class MemeBot implements EventListener, Runnable {
 		return relayStatus;
 	}
 	
+	public boolean isTrackLooping()
+	{
+		return nextTrackLoop;
+	}
+	
+	public void setTrackLooping(boolean loop)
+	{
+		nextTrackLoop = loop;
+	}
+	
 	public boolean sendMessage(String msg)
 	{
 		if (currentMsgChannel == null) return false;
@@ -357,10 +367,11 @@ public class MemeBot implements EventListener, Runnable {
 		return voiceConnected;
 	}
 	
-	public void loadYoutube(MessageChannel channel, String id)
+	public void loadYoutube(MessageChannel channel, String id, boolean loop)
 	{
 		audioLoader.responseChannel = channel;
 		playerManager.loadItem(Strings.getYoutubeUrl(id), audioLoader);
+		nextTrackLoop = loop;
 	}
 	
 	public TrackScheduler getTrackScheduler()
@@ -380,12 +391,16 @@ public class MemeBot implements EventListener, Runnable {
 		}
 
 		public void playlistLoaded(AudioPlaylist playlist) {
-			responseChannel.sendMessage("huh I found a playlist what the hell is this I don't even").queue();
+			responseChannel.sendMessage("I don't like playlists.").queue();
 		}
 
 		public void trackLoaded(AudioTrack track) {
+			if (nextTrackLoop)
+			{
+				responseChannel.sendMessage("Next track will loop.").queue();
+			}
 			responseChannel.sendMessage("Found \"" + track.getInfo().title + "\". Use !play to start it.").queue();
-			trackScheduler.setTrack(track);
+			trackScheduler.setTrack(track, nextTrackLoop);
 		}
 		
 	}
@@ -414,18 +429,6 @@ public class MemeBot implements EventListener, Runnable {
 			guild.getController().moveVoiceMember(m, channels.get(randomInt(channels.size()))).queue();
 		}
 
-	}
-	
-	public void unscrambleGuild(Guild guild)
-	{
-		for (int i = 0; i < scrambleGuilds.size(); i++)
-		{
-			if (scrambleGuilds.get(i).getId().equals(guild.getId()))
-			{
-				scrambleGuilds.remove(i);
-				break;
-			}
-		}
 	}
 	
 	public void exit()

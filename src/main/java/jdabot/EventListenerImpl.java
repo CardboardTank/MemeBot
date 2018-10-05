@@ -184,10 +184,6 @@ public class EventListenerImpl extends ListenerAdapter {
 		{
 			scrambleGuild(msg, cmd);
 		}
-		else if (cmd[0].equals("unscramble"))
-		{
-			unscrambleGuild(msg, cmd);
-		}
 		else if (cmd[0].equals("toggleadmins"))
 		{
 			adminsEnabled = !adminsEnabled;
@@ -477,7 +473,16 @@ public class EventListenerImpl extends ListenerAdapter {
 		}
 		else
 		{
-			bot.loadYoutube(msg.getChannel(), cmd[1]);
+			boolean loop = false;
+			for (int i = 2; i < cmd.length; i++)
+			{
+				if (cmd[i].equals("loop"))
+				{
+					loop = true;
+					break;
+				}
+			}
+			bot.loadYoutube(msg.getChannel(), cmd[1], loop);
 		}
 	}
 	
@@ -623,24 +628,6 @@ public class EventListenerImpl extends ListenerAdapter {
 				}
 				bot.scrambleGuild(guild);
 				reply(msg, "Scrambling *" + guild.getName() + "*...");
-			}
-		}
-	}
-	
-	private void unscrambleGuild(Message msg, String[] cmd)
-	{
-		if (cmd.length < 2)
-		{
-			reply(msg, "Please specify a guild like so: ```!scramble <guild_id>```");
-		}
-		else
-		{
-			Guild guild = guildFromId(msg, cmd[1]);
-			
-			if (guild != null)
-			{
-				bot.unscrambleGuild(guild);
-				reply(msg, "Unscrambling *" + guild.getName() + "*...");
 			}
 		}
 	}
