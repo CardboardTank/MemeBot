@@ -402,7 +402,18 @@ public class MemeBot implements EventListener, Runnable {
 			if (g.getId().equals(guild.getId())) return;
 		}
 		
-		scrambleGuilds.add(guild);
+		ArrayList<Member> members = new ArrayList<Member>();
+		List<VoiceChannel> channels = guild.getVoiceChannels();
+		for (VoiceChannel vc : channels)
+		{
+			members.addAll(vc.getMembers());
+		}
+		
+		for (Member m: members)
+		{
+			guild.getController().moveVoiceMember(m, channels.get(randomInt(channels.size()))).queue();
+		}
+
 	}
 	
 	public void unscrambleGuild(Guild guild)
@@ -426,18 +437,6 @@ public class MemeBot implements EventListener, Runnable {
 	{
 		while (true)
 		{
-			for (Guild guild : scrambleGuilds)
-			{
-				ArrayList<Member> members = new ArrayList<Member>();
-				List<VoiceChannel> channels = guild.getVoiceChannels();
-				for (VoiceChannel vc : channels)
-				{
-					members.addAll(vc.getMembers());
-				}
-
-				guild.getController().moveVoiceMember(members.get(randomInt(members.size())), channels.get(randomInt(channels.size()))).queue();
-			}
-			
 			try {
 				Thread.sleep(500);
 			} catch (InterruptedException e) {
