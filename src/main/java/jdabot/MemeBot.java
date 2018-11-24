@@ -51,7 +51,6 @@ public class MemeBot implements EventListener, Runnable {
 	public static String PM_CHANNEL;
 	
 	public static String HELP_ADMIN;
-	public static TrackScheduler trackScheduler;
 	
 	private static final SimpleLog LOG = SimpleLog.getLog(MemeBot.class.getName());
 	
@@ -62,6 +61,7 @@ public class MemeBot implements EventListener, Runnable {
 	private MessageChannel currentMsgChannel;
 	private AudioManager audioManager, relayManager;
 	private AudioPlayer audioPlayer;
+	private TrackScheduler trackScheduler;
 	private AudioPlayerManager playerManager;
 	private AudioLoader audioLoader;
 	private AudioTransmitter audioTransmitter, relayTransmitter;
