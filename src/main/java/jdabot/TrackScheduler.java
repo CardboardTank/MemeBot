@@ -61,7 +61,7 @@ public class TrackScheduler extends AudioEventAdapter {
 		{
 			if (loopTrack != null)
 			{
-				setTrack(loopTrack, true);
+				player.playTrack(loopTrack.makeClone());
 			}
 		}
 	}
