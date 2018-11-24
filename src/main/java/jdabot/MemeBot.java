@@ -61,9 +61,9 @@ public class MemeBot implements EventListener, Runnable {
 	private MessageChannel currentMsgChannel;
 	private AudioManager audioManager, relayManager;
 	private AudioPlayer audioPlayer;
+	private TrackScheduler trackScheduler;
 	private AudioPlayerManager playerManager;
 	private AudioLoader audioLoader;
-	private TrackScheduler trackScheduler;
 	private AudioTransmitter audioTransmitter, relayTransmitter;
 	private AudioReceiver audioReceiver, relayReceiver;
 	
