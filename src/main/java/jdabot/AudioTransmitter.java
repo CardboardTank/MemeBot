@@ -1,9 +1,11 @@
 package jdabot;
 
+import java.nio.ByteBuffer;
+
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioFrame;
 
-import net.dv8tion.jda.core.audio.AudioSendHandler;
+import net.dv8tion.jda.api.audio.AudioSendHandler;
 
 public class AudioTransmitter implements AudioSendHandler {
 	
@@ -32,8 +34,8 @@ public class AudioTransmitter implements AudioSendHandler {
 		return lastFrame != null;
 	}
 
-	public byte[] provide20MsAudio() {
-		return lastFrame;
+	public ByteBuffer provide20MsAudio() {
+		return ByteBuffer.wrap(lastFrame);
 	}
 	
 	public void setRelay(boolean relayAudio)

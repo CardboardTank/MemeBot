@@ -1,6 +1,6 @@
 package jdabot;
 
-import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.api.entities.User;
 
 public class Strings {
 	
@@ -50,20 +50,25 @@ public class Strings {
 			"thick"
 	};
 	
+//	public static final String[] sadWords = {
+//			"):", ":/", ":[", "]:", ")=",
+//			"sadness",
+//			"sad",
+//			"depression",
+//			"depressed",
+//			"sorrow",
+//			"sorrowful",
+//			"grief",
+//			"mourn",
+//			"down",
+//			"bitter",
+//			"low",
+//			"gloomy"
+//	};
+
 	public static final String[] sadWords = {
-			"):", ":/", ":[", "]:", ")=",
-			"sadness",
-			"sad",
-			"depression",
-			"depressed",
-			"sorrow",
-			"sorrowful",
-			"grief",
-			"mourn",
-			"down",
-			"bitter",
-			"low",
-			"gloomy"
+			"cat", "cats", "kitten", "kittens",
+			"kitty", "kitties", "meow", "purr"
 	};
 	
 	public static final String youtubeUrl = "https://www.youtube.com/watch?v=";
@@ -72,7 +77,7 @@ public class Strings {
 	
 	public static final String cuffTrigger = "cuffs";
 	
-	public static final String sadMsg = "Oh no! % is sad. Have a kitty!";
+	public static final String sadMsg = "kitty incoming for %";
 	
 	public static final String[] saltFlavorText = {
 			"Receiving a shipment from %",
@@ -137,7 +142,7 @@ public class Strings {
 				}
 			}
 			
-			if (sad && self) return true;
+			if (sad /*&& self*/) return true;
 		}
 		return false;
 	}

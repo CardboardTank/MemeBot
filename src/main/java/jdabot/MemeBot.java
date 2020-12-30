@@ -23,24 +23,22 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
-import net.dv8tion.jda.core.AccountType;
-import net.dv8tion.jda.core.JDA;
-import net.dv8tion.jda.core.JDABuilder;
-import net.dv8tion.jda.core.MessageBuilder;
-import net.dv8tion.jda.core.audio.hooks.ConnectionStatus;
-import net.dv8tion.jda.core.entities.Game;
-import net.dv8tion.jda.core.entities.Game.GameType;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.MessageChannel;
-import net.dv8tion.jda.core.entities.User;
-import net.dv8tion.jda.core.entities.VoiceChannel;
-import net.dv8tion.jda.core.events.Event;
-import net.dv8tion.jda.core.events.ReadyEvent;
-import net.dv8tion.jda.core.exceptions.RateLimitedException;
-import net.dv8tion.jda.core.hooks.EventListener;
-import net.dv8tion.jda.core.managers.AudioManager;
+import net.dv8tion.jda.api.AccountType;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.audio.hooks.ConnectionStatus;
+import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.VoiceChannel;
+import net.dv8tion.jda.api.events.GenericEvent;
+import net.dv8tion.jda.api.events.ReadyEvent;
+import net.dv8tion.jda.api.exceptions.RateLimitedException;
+import net.dv8tion.jda.api.hooks.EventListener;
+import net.dv8tion.jda.api.managers.AudioManager;
 
 public class MemeBot implements EventListener, Runnable {
 	
@@ -49,8 +47,8 @@ public class MemeBot implements EventListener, Runnable {
 	public static String OWNER_ID;
 	public static String[] ADMIN_IDS;
 	public static String PM_CHANNEL;
-	
 	public static String HELP_ADMIN;
+	public static String STREAM_LINK;
 	
 	private static final SimpleLog LOG = SimpleLog.getLog(MemeBot.class.getName());
 	
@@ -75,7 +73,8 @@ public class MemeBot implements EventListener, Runnable {
 	private ArrayList<Guild> scrambleGuilds;
 	
 	private Random rand;
-
+	
+	
 	// link: https://discordapp.com/api/oauth2/authorize?client_id=364954414148091905&scope=bot&permissions=0
 	
 	public static void main(String[] args)
@@ -103,20 +102,20 @@ public class MemeBot implements EventListener, Runnable {
 		JSONArray admins = cfg.getJSONArray("admin_ids");
 		ADMIN_IDS = new String[admins.length() + 1];
 		PM_CHANNEL = cfg.getString("pm_channel");
-		
 		ADMIN_IDS[0] = OWNER_ID;
+		STREAM_LINK = cfg.getString("stream_link");
 		for (int i = 0; i < admins.length(); i++)
 		{
 			ADMIN_IDS[i+1] = admins.getString(i);
 		}
 		
 		MemeBot bot = new MemeBot();
-		JDA jda = new JDABuilder(AccountType.BOT).setToken(cfg.getString("bot_token")).addEventListener(bot).buildAsync();
+		JDA jda = JDABuilder.createDefault(cfg.getString("bot_token")).addEventListeners(bot).build();
 		bot.jda = jda;
 		bot.initFiles();
 	}
 
-	public void onEvent(Event e) {
+	public void onEvent(GenericEvent e) {
 		if (e instanceof ReadyEvent)
 		{
 			start();
@@ -151,7 +150,12 @@ public class MemeBot implements EventListener, Runnable {
 	private void start()
 	{
 		voiceConnected = false;
-		jda.getPresence().setGame(Game.of(GameType.DEFAULT, "with your credit card"));
+		if (STREAM_LINK != null) {
+			jda.getPresence().setActivity(Activity.streaming("outside your window", STREAM_LINK));
+		} else {
+			jda.getPresence().setActivity(Activity.playing("with your credit card"));
+		}
+		//jda.getPresence().setGame(Game.of(GameType.DEFAULT, "with your credit card"));
 		playerManager = new DefaultAudioPlayerManager();
 		AudioSourceManagers.registerRemoteSources(playerManager);
 		
@@ -210,7 +214,7 @@ public class MemeBot implements EventListener, Runnable {
 	{
 		LOG.info("Sending some salt for message \"" + msg.getContentDisplay() + "\" in channel " + msg.getChannel().getName() + " (id: " + msg.getChannel().getId() + ")");
 		String saltMsg = Strings.constructSaltShipment(msg.getAuthor());
-		msg.getChannel().sendFile(salt, new MessageBuilder().append(saltMsg).build()).queue();
+		msg.getChannel().sendMessage(saltMsg).addFile(salt).queue();
 	}
 	
 	public void sendKitty(Message msg)
@@ -219,14 +223,13 @@ public class MemeBot implements EventListener, Runnable {
 		int index = (int) Math.floor(Math.random() * kitties.length);
 		int pIndex = Strings.sadMsg.indexOf("%");
 		String str = Strings.sadMsg.substring(0, pIndex) + msg.getAuthor().getAsMention() + Strings.sadMsg.substring(pIndex+1);
-		
-		msg.getChannel().sendFile(kitties[index], new MessageBuilder().append(str).build()).queue();
+		msg.getChannel().sendMessage(str).addFile(kitties[index]).queue();
 	}
 	
 	public void sendCuffs(Message msg)
 	{
 		LOG.info("Sending some cuffs for message \"" + msg.getContentDisplay() + "\" in channel " + msg.getChannel().getName() + " (id: " + msg.getChannel().getId() + ")");
-		msg.getChannel().sendFile(cuffsGif, new MessageBuilder().append(msg.getAuthor()).build()).queue();
+		msg.getChannel().sendMessage(msg.getAuthor().getAsMention()).addFile(cuffsGif).queue();
 	}
 	
 	public void setChannel(VoiceChannel channel)
@@ -426,7 +429,7 @@ public class MemeBot implements EventListener, Runnable {
 		
 		for (Member m: members)
 		{
-			guild.getController().moveVoiceMember(m, channels.get(randomInt(channels.size()))).queue();
+			guild.moveVoiceMember(m, channels.get(randomInt(channels.size()))).queue();
 		}
 
 	}
